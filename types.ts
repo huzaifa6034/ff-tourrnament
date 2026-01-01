@@ -1,5 +1,5 @@
 
-export type Screen = 'HOME' | 'WALLET' | 'PROFILE' | 'TOURNAMENT_DETAIL' | 'AUTH' | 'SIGNUP' | 'RESULT_UPLOAD' | 'ADMIN' | 'ADMIN_MATCHES' | 'ADMIN_AUTH';
+export type Screen = 'HOME' | 'WALLET' | 'PROFILE' | 'TOURNAMENT_DETAIL' | 'AUTH' | 'SIGNUP' | 'RESULT_UPLOAD' | 'ADMIN' | 'ADMIN_MATCHES' | 'ADMIN_AUTH' | 'LEADERBOARD';
 
 export interface Tournament {
   id: string;

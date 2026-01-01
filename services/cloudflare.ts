@@ -52,6 +52,12 @@ export const CloudflareService = {
     return response.ok;
   },
 
+  async getLeaderboard(): Promise<any[]> {
+    const response = await fetch(`${API_BASE_URL}/user/leaderboard`);
+    if (!response.ok) return [];
+    return await response.json();
+  },
+
   // --- Dynamic Tournament Service ---
   async getTournaments(): Promise<Tournament[]> {
     const response = await fetch(`${API_BASE_URL}/admin/tournaments`);

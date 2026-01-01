@@ -19,14 +19,22 @@ export const onRequestPost: any = async (context: any) => {
       return new Response(JSON.stringify({ message: "Email already exists" }), { status: 400 });
     }
 
-    // Role is explicitly set to 'player' during signup
+    // Explicitly initializing all user stats for the Leaderboard
     await DB.prepare(
-      "INSERT INTO users (uid, username, email, password, balance, role) VALUES (?, ?, ?, ?, ?, ?)"
+      "INSERT INTO users (uid, username, email, password, balance, role, totalEarnings, matchesPlayed) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
     )
-    .bind(uid, username, email, password, 100.0, 'player')
+    .bind(uid, username, email, password, 100.0, 'player', 0.0, 0)
     .run();
 
-    const user = { uid, username, email, balance: 100.0, role: 'player' };
+    const user = { 
+      uid, 
+      username, 
+      email, 
+      balance: 100.0, 
+      role: 'player',
+      totalEarnings: 0.0,
+      matchesPlayed: 0
+    };
     return new Response(JSON.stringify({ user }), { status: 200 });
 
   } catch (e: any) {
