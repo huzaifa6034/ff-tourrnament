@@ -43,6 +43,12 @@ export const CloudflareService = {
     return data.balance;
   },
 
+  async getMyTournaments(uid: string): Promise<string[]> {
+    const response = await fetch(`${API_BASE_URL}/user/my-tournaments?uid=${uid}`);
+    if (!response.ok) return [];
+    return await response.json();
+  },
+
   async updateBalance(uid: string, amount: number): Promise<boolean> {
     const response = await fetch(`${API_BASE_URL}/user/update-balance`, {
       method: 'POST',
