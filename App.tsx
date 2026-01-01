@@ -17,7 +17,7 @@ const App: React.FC = () => {
   // Admin States
   const [adminUsers, setAdminUsers] = useState<User[]>([]);
   const [newMatch, setNewMatch] = useState({
-    title: '', type: 'Solo', entryFee: 10, prizePool: 100, perKill: 5, startTime: '08:00 PM', totalSlots: 48, map: 'Bermuda'
+    title: '', type: 'Solo', entryFee: 10, prizePool: 100, perKill: 5, startTime: '08:00 PM', totalSlots: 50, map: 'Bermuda'
   });
 
   const [formData, setFormData] = useState({ email: '', password: '', username: '' });
@@ -58,7 +58,7 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (user?.uid && screen !== 'AUTH' && screen !== 'ADMIN_AUTH') {
+    if (user?.uid && screen !== 'AUTH' && screen !== 'ADMIN_AUTH' && screen !== 'SIGNUP') {
       const interval = setInterval(async () => {
         try {
           const latestBalance = await CloudflareService.getBalance(user.uid);
@@ -66,7 +66,7 @@ const App: React.FC = () => {
             setUser(prev => prev ? { ...prev, balance: latestBalance } : null);
           }
         } catch (e) {}
-      }, 5000);
+      }, 10000);
       return () => clearInterval(interval);
     }
   }, [user?.uid, screen]);
@@ -100,6 +100,7 @@ const App: React.FC = () => {
           setScreen('HOME');
         }
       }
+      loadData();
     } catch (err: any) {
       setAuthError(err.message || "Authentication Failed");
     } finally {
@@ -123,7 +124,7 @@ const App: React.FC = () => {
       return;
     }
 
-    if (!confirm(`Join ${match.title}?`)) return;
+    if (!confirm(`Join ${match.title}? (₹${match.entryFee} will be deducted)`)) return;
 
     setLoading(true);
     try {
@@ -131,10 +132,10 @@ const App: React.FC = () => {
       if (success) {
         setUser({ ...user, balance: user.balance - match.entryFee });
         setJoinedTournaments([...joinedTournaments, match.id]);
-        alert("Joined successfully!");
-        loadData(); // Refresh slot count
+        alert("Success! You are now registered.");
+        loadData();
       } else {
-        alert("Failed to join. Match might be full.");
+        alert("Failed to join.");
       }
     } catch (e) {
       alert("Error joining tournament.");
@@ -148,11 +149,11 @@ const App: React.FC = () => {
     setLoading(true);
     const success = await CloudflareService.adminAddTournament(newMatch);
     if (success) {
-      alert("Tournament Created!");
+      alert("Tournament Created Successfully!");
       loadData();
       setScreen('ADMIN');
     } else {
-      alert("Failed to create.");
+      alert("Failed to create match.");
     }
     setLoading(false);
   };
@@ -184,14 +185,14 @@ const App: React.FC = () => {
       {loading && (
         <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-xl flex flex-col items-center justify-center p-10 text-center">
           <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-orange-500 font-black text-[10px] tracking-[0.3em] uppercase">Cloud Syncing...</p>
+          <p className="text-orange-500 font-black text-[10px] tracking-[0.3em] uppercase">Processing Request...</p>
         </div>
       )}
 
       {screen === 'ADMIN_AUTH' ? (
         <div className="min-h-screen bg-slate-950 p-8 flex flex-col justify-center animate-fadeIn">
           <div className="text-center mb-10">
-            <div className="w-20 h-20 bg-cyan-500 rounded-2xl mx-auto flex items-center justify-center text-black text-4xl mb-4">
+            <div className="w-20 h-20 bg-cyan-500 rounded-2xl mx-auto flex items-center justify-center text-black text-4xl mb-4 shadow-[0_0_30px_rgba(6,182,212,0.3)]">
               <i className="fa-solid fa-shield-halved"></i>
             </div>
             <h2 className="gaming-font text-2xl font-black text-white uppercase tracking-widest">Admin Portal</h2>
@@ -218,11 +219,11 @@ const App: React.FC = () => {
                  <input type="text" placeholder="Map" className="bg-black/40 border border-white/10 rounded-2xl p-4 text-white text-xs" value={newMatch.map} onChange={e => setNewMatch({...newMatch, map: e.target.value})} />
               </div>
               <div className="grid grid-cols-3 gap-2">
-                 <div><p className="text-[8px] text-slate-500 uppercase ml-2 mb-1">Entry</p><input type="number" className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white text-xs" value={newMatch.entryFee} onChange={e => setNewMatch({...newMatch, entryFee: parseInt(e.target.value)})} /></div>
-                 <div><p className="text-[8px] text-slate-500 uppercase ml-2 mb-1">Pool</p><input type="number" className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white text-xs" value={newMatch.prizePool} onChange={e => setNewMatch({...newMatch, prizePool: parseInt(e.target.value)})} /></div>
-                 <div><p className="text-[8px] text-slate-500 uppercase ml-2 mb-1">Max Slots</p><input type="number" className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white text-xs" value={newMatch.totalSlots} onChange={e => setNewMatch({...newMatch, totalSlots: parseInt(e.target.value)})} /></div>
+                 <div><p className="text-[8px] text-slate-500 uppercase ml-2 mb-1">Entry (₹)</p><input type="number" className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white text-xs" value={newMatch.entryFee} onChange={e => setNewMatch({...newMatch, entryFee: parseInt(e.target.value)})} /></div>
+                 <div><p className="text-[8px] text-slate-500 uppercase ml-2 mb-1">Pool (₹)</p><input type="number" className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white text-xs" value={newMatch.prizePool} onChange={e => setNewMatch({...newMatch, prizePool: parseInt(e.target.value)})} /></div>
+                 <div><p className="text-[8px] text-slate-500 uppercase ml-2 mb-1">Slots</p><input type="number" className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white text-xs" value={newMatch.totalSlots} onChange={e => setNewMatch({...newMatch, totalSlots: parseInt(e.target.value)})} /></div>
               </div>
-              <input type="text" placeholder="Time (e.g. 09:00 PM)" className="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white text-xs" value={newMatch.startTime} onChange={e => setNewMatch({...newMatch, startTime: e.target.value})} />
+              <input type="text" placeholder="Start Time (e.g. 10:00 PM)" className="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white text-xs" value={newMatch.startTime} onChange={e => setNewMatch({...newMatch, startTime: e.target.value})} />
               <button type="submit" className="w-full bg-orange-500 text-white font-black py-4 rounded-2xl uppercase tracking-widest mt-4">Publish Match</button>
            </form>
         </div>
@@ -235,10 +236,10 @@ const App: React.FC = () => {
           </div>
           <form onSubmit={(e) => handleAuthAction(e)} className="space-y-4">
             {screen === 'SIGNUP' && (
-              <input type="text" placeholder="Gamer ID" required className="w-full bg-slate-900 border border-white/10 rounded-2xl py-4 px-6 text-white outline-none focus:border-orange-500" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} />
+              <input type="text" placeholder="In-Game Name" required className="w-full bg-slate-900 border border-white/10 rounded-2xl py-4 px-6 text-white outline-none focus:border-orange-500" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} />
             )}
             <input type="email" placeholder="Email Address" required className="w-full bg-slate-900 border border-white/10 rounded-2xl py-4 px-6 text-white outline-none focus:border-orange-500" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-            <input type="password" placeholder="Secret Password" required className="w-full bg-slate-900 border border-white/10 rounded-2xl py-4 px-6 text-white outline-none focus:border-orange-500" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
+            <input type="password" placeholder="Password" required className="w-full bg-slate-900 border border-white/10 rounded-2xl py-4 px-6 text-white outline-none focus:border-orange-500" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
             {authError && <p className="text-rose-500 text-[10px] text-center font-bold">{authError}</p>}
             <button type="submit" className="w-full bg-orange-500 text-white font-black py-4 rounded-2xl uppercase tracking-widest border-b-4 border-orange-700 active:scale-95 transition-all">
               {screen === 'AUTH' ? 'ENTER LOBBY' : 'JOIN THE TEAM'}
@@ -247,7 +248,7 @@ const App: React.FC = () => {
           <button onClick={() => setScreen(screen === 'AUTH' ? 'SIGNUP' : 'AUTH')} className="mt-8 text-slate-500 text-[10px] font-black uppercase text-center w-full underline">
             {screen === 'AUTH' ? "Need an account?" : "Already a member?"}
           </button>
-          <button onClick={() => setScreen('ADMIN_AUTH')} className="mt-16 text-slate-800 text-[8px] font-black uppercase text-center w-full opacity-50 hover:opacity-100 transition-all">Admin Secure Access</button>
+          <button onClick={() => setScreen('ADMIN_AUTH')} className="mt-16 text-slate-800 text-[8px] font-black uppercase text-center w-full opacity-50 hover:opacity-100 transition-all">Admin Console</button>
         </div>
       ) : screen === 'ADMIN' ? (
         <div className="p-6 space-y-8 animate-fadeIn pb-32">
@@ -261,7 +262,7 @@ const App: React.FC = () => {
                  <button onClick={() => setScreen('ADMIN_MATCHES')} className="bg-orange-500 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase shadow-lg shadow-orange-500/20">Create Match</button>
               </div>
               <div className="space-y-3">
-                 {tournaments.map(t => (
+                 {tournaments.length === 0 ? <p className="text-slate-600 text-[8px] text-center py-4 uppercase">No matches to show</p> : tournaments.map(t => (
                    <div key={t.id} className="flex justify-between items-center p-4 bg-black/40 rounded-2xl border border-white/5">
                       <div>
                         <p className="text-white font-black text-xs">{t.title}</p>
@@ -288,7 +289,7 @@ const App: React.FC = () => {
           <div className="pb-32 p-5">
             {screen === 'HOME' && (
               <div className="space-y-6">
-                <div className="bg-gradient-to-br from-indigo-950/80 to-slate-900 p-8 rounded-[40px] border border-white/10 relative overflow-hidden">
+                <div className="bg-gradient-to-br from-indigo-950/80 to-slate-900 p-8 rounded-[40px] border border-white/10 relative overflow-hidden shadow-2xl">
                    <h2 className="gaming-font text-white text-lg font-black uppercase">WARRIOR: {user?.username}</h2>
                    <div className="flex gap-4 mt-6">
                       <div className="bg-white/5 px-5 py-3 rounded-2xl border border-white/5">
@@ -307,16 +308,16 @@ const App: React.FC = () => {
                   <button onClick={loadData} className="text-orange-500"><i className="fa-solid fa-rotate-right"></i></button>
                 </div>
 
-                {tournaments.map(match => {
+                {tournaments.length === 0 ? <p className="text-slate-600 text-[10px] text-center py-20 uppercase font-black tracking-widest">No active matches</p> : tournaments.map(match => {
                   const isJoined = joinedTournaments.includes(match.id);
                   const isFull = match.slotsFull >= match.totalSlots;
                   const slotPercent = Math.min(100, (match.slotsFull / match.totalSlots) * 100);
 
                   return (
-                    <div key={match.id} className={`bg-slate-900/40 border ${isJoined ? 'border-emerald-500/40' : isFull ? 'border-rose-500/20' : 'border-white/5'} rounded-[40px] p-6 group transition-all`}>
+                    <div key={match.id} className={`bg-slate-900/40 border ${isJoined ? 'border-emerald-500/40' : isFull ? 'border-rose-500/20' : 'border-white/5'} rounded-[40px] p-6 group transition-all shadow-xl`}>
                       <div className="flex justify-between items-start mb-6">
                         <div className="flex gap-4 items-center">
-                          <div className={`w-12 h-12 ${isJoined ? 'bg-emerald-500 text-white' : isFull ? 'bg-slate-900 text-slate-700' : 'bg-slate-800 text-orange-500'} rounded-2xl flex items-center justify-center border border-white/5`}>
+                          <div className={`w-12 h-12 ${isJoined ? 'bg-emerald-500 text-white' : isFull ? 'bg-slate-900 text-slate-700' : 'bg-slate-800 text-orange-500'} rounded-2xl flex items-center justify-center border border-white/5 shadow-lg`}>
                              <i className={`fa-solid ${match.type === 'Solo' ? 'fa-user' : 'fa-users'} text-xl`}></i>
                           </div>
                           <div>
@@ -333,10 +334,9 @@ const App: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Slot Progress Bar */}
                       <div className="mb-4 space-y-2">
                         <div className="flex justify-between text-[8px] font-black uppercase tracking-widest">
-                           <span className={isFull ? 'text-rose-500' : 'text-slate-500'}>{isFull ? 'Match Full' : 'Spots Filling Fast'}</span>
+                           <span className={isFull ? 'text-rose-500' : 'text-slate-500'}>{isFull ? 'Match Full' : 'Spots Filling'}</span>
                            <span className="text-white">{match.slotsFull} / {match.totalSlots}</span>
                         </div>
                         <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden border border-white/5">
@@ -347,14 +347,14 @@ const App: React.FC = () => {
                       <div className="flex justify-between items-center pt-4 border-t border-white/5">
                         <div className="flex gap-4">
                            <div><p className="text-[7px] text-slate-600 font-black uppercase">Entry</p><p className="text-xs text-white font-black italic">₹{match.entryFee}</p></div>
-                           <div><p className="text-[7px] text-slate-600 font-black uppercase">Per Kill</p><p className="text-xs text-white font-black italic">₹{match.perKill}</p></div>
+                           <div><p className="text-[7px] text-slate-600 font-black uppercase">Kill</p><p className="text-xs text-white font-black italic">₹{match.perKill}</p></div>
                         </div>
                         {isJoined ? (
                           <span className="bg-emerald-500/20 text-emerald-500 text-[9px] font-black px-4 py-2 rounded-xl border border-emerald-500/20">JOINED ✅</span>
                         ) : isFull ? (
                           <span className="bg-rose-500/10 text-rose-500 text-[9px] font-black px-4 py-2 rounded-xl border border-rose-500/20 opacity-50">FULL 🚫</span>
                         ) : (
-                          <button onClick={() => joinMatch(match)} className="bg-orange-500/10 text-orange-500 text-[9px] font-black px-4 py-2 rounded-xl border border-orange-500/20 group-hover:bg-orange-500 group-hover:text-white transition-all">JOIN NOW</button>
+                          <button onClick={() => joinMatch(match)} className="bg-orange-500/10 text-orange-500 text-[9px] font-black px-6 py-2 rounded-xl border border-orange-500/20 group-hover:bg-orange-500 group-hover:text-white transition-all shadow-lg active:scale-95">JOIN NOW</button>
                         )}
                       </div>
                     </div>
@@ -362,51 +362,124 @@ const App: React.FC = () => {
                 })}
               </div>
             )}
-            
-            {/* ... rest of the screens (Leaderboard, Wallet, etc.) ... */}
+
             {screen === 'LEADERBOARD' && (
               <div className="space-y-6 animate-fadeIn">
-                <h2 className="gaming-font text-2xl font-black text-white text-center uppercase">World Ranking</h2>
-                <div className="bg-slate-900/40 border border-white/5 rounded-[40px] overflow-hidden">
-                  {leaderboard.map((player, index) => (
-                    <div key={player.username} className="p-6 border-b border-white/5 flex justify-between items-center">
+                <div className="text-center mb-10">
+                  <div className="inline-block p-4 bg-orange-500/10 rounded-3xl mb-4 border border-orange-500/20">
+                    <i className="fa-solid fa-trophy text-orange-500 text-5xl"></i>
+                  </div>
+                  <h2 className="gaming-font text-2xl font-black text-white uppercase">World Ranking</h2>
+                  <p className="text-slate-500 text-[8px] uppercase tracking-[0.4em] mt-2">Top Warriors</p>
+                </div>
+                <div className="bg-slate-900/40 border border-white/5 rounded-[40px] overflow-hidden shadow-2xl">
+                  {leaderboard.length === 0 ? <p className="text-slate-600 text-[8px] text-center py-20 uppercase">Waiting for rankings...</p> : leaderboard.map((player, index) => (
+                    <div key={player.username} className={`p-6 border-b border-white/5 flex justify-between items-center ${player.username === user?.username ? 'bg-orange-500/10' : ''}`}>
                        <div className="flex items-center gap-4">
-                          <span className="text-orange-500 font-black text-lg">#{index+1}</span>
+                          <span className={`font-black text-lg ${index === 0 ? 'text-yellow-400' : index === 1 ? 'text-slate-300' : index === 2 ? 'text-orange-800' : 'text-slate-600'}`}>#{index+1}</span>
                           <div>
-                             <p className="text-white font-black uppercase">{player.username}</p>
+                             <p className="text-white font-black uppercase text-sm">{player.username}</p>
                              <p className="text-[8px] text-slate-500 uppercase">{player.matchesPlayed} Matches</p>
                           </div>
                        </div>
-                       <p className="text-emerald-400 font-black italic">₹{player.totalEarnings}</p>
+                       <p className="text-emerald-400 font-black italic text-lg">₹{player.totalEarnings}</p>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
+            {screen === 'RESULT_UPLOAD' && (
+              <div className="space-y-6 animate-fadeIn">
+                <div className="text-center mb-8">
+                  <h2 className="gaming-font text-2xl font-black text-white uppercase">AI VERIFIER</h2>
+                  <p className="text-slate-500 text-[9px] font-bold uppercase tracking-[0.3em] mt-2">Upload Result Screenshot</p>
+                </div>
+                <div className="bg-slate-950 border-4 border-dashed border-slate-800 rounded-[50px] p-16 text-center relative group hover:border-orange-500 transition-all shadow-inner">
+                   <input type="file" className="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/*" onChange={(e) => e.target.files?.[0] && (async () => {
+                      setIsVerifying(true); setAiResult(null);
+                      const file = e.target.files![0];
+                      const reader = new FileReader(); reader.readAsDataURL(file);
+                      reader.onload = async () => {
+                        try {
+                          const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+                          const base64Data = (reader.result as string).split(',')[1];
+                          const response = await ai.models.generateContent({
+                            model: 'gemini-3-flash-preview',
+                            contents: { parts: [{ inlineData: { data: base64Data, mimeType: file.type } }, { text: "Verify Free Fire end-game result. Extract: Player Name, Position, and Total Kills. Only respond with the extracted data clearly." }] }
+                          });
+                          setAiResult(response.text || "Scan failed.");
+                        } catch (e) { setAiResult("AI verification failed. Please try again."); } finally { setIsVerifying(false); }
+                      };
+                   })()} />
+                   <i className="fa-solid fa-cloud-arrow-up text-6xl text-slate-800 mb-6 group-hover:text-orange-500 group-hover:scale-110 transition-all"></i>
+                   <p className="font-black text-[12px] uppercase tracking-[0.2em] text-slate-500">Tap to upload file</p>
+                </div>
+                {isVerifying && (
+                   <div className="bg-orange-500/10 p-6 rounded-3xl border border-orange-500/20 text-center">
+                     <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                     <p className="text-orange-500 animate-pulse font-black text-[10px] uppercase tracking-widest">AI Engine Scanning Screenshot...</p>
+                   </div>
+                )}
+                {aiResult && (
+                   <div className="bg-slate-900/80 p-8 rounded-[40px] border border-white/5 font-mono text-[11px] text-slate-300 whitespace-pre-wrap leading-relaxed shadow-2xl">
+                     <p className="text-orange-500 font-black mb-4 uppercase tracking-widest border-b border-white/5 pb-2">Analysis Result</p>
+                     {aiResult}
+                   </div>
+                )}
+              </div>
+            )}
+
             {screen === 'WALLET' && (
               <div className="space-y-6 animate-fadeIn">
-                 <button onClick={() => setScreen('HOME')} className="text-slate-500 text-[10px] font-black uppercase underline">Back</button>
-                 <div className="bg-slate-950 p-12 rounded-[50px] border border-white/5 text-center">
-                    <p className="text-slate-500 text-[10px] uppercase mb-6">Secured Vault</p>
+                 <button onClick={() => setScreen('HOME')} className="text-slate-500 text-[10px] font-black uppercase underline flex items-center gap-2"><i className="fa-solid fa-chevron-left"></i> Hub</button>
+                 <div className="bg-slate-950 p-12 rounded-[50px] border border-white/5 text-center shadow-2xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 blur-3xl rounded-full"></div>
+                    <p className="text-slate-500 text-[10px] uppercase mb-6 tracking-widest">Available Balance</p>
                     <h3 className="text-7xl font-black text-white mb-12 italic tracking-tighter">₹{user?.balance}</h3>
                     <div className="grid grid-cols-2 gap-4">
-                       <button onClick={() => alert("Recharge feature integrated with D1!")} className="bg-orange-500 text-white font-black py-5 rounded-2xl uppercase tracking-widest">Deposit</button>
-                       <button onClick={() => alert("Withdraw logic ready!")} className="bg-slate-900 text-white font-black py-5 rounded-2xl border border-white/10">Withdraw</button>
+                       <button onClick={() => alert("Payment gateway integration pending.")} className="bg-orange-500 text-white font-black py-5 rounded-2xl uppercase tracking-widest shadow-lg shadow-orange-500/20">Deposit</button>
+                       <button onClick={() => alert("Withdrawals processed within 24h.")} className="bg-slate-900 text-white font-black py-5 rounded-2xl border border-white/10 active:scale-95 transition-all">Withdraw</button>
                     </div>
                  </div>
               </div>
             )}
+
+            {screen === 'PROFILE' && (
+              <div className="space-y-6 animate-fadeIn">
+                 <div className="bg-slate-900 p-10 rounded-[50px] text-center border border-white/5 relative overflow-hidden shadow-2xl">
+                    <div className="w-24 h-24 bg-slate-800 rounded-[35px] mx-auto mb-6 flex items-center justify-center text-5xl text-orange-500 shadow-inner">
+                      <i className="fa-solid fa-user-ninja"></i>
+                    </div>
+                    <h2 className="gaming-font text-2xl font-black text-white uppercase tracking-tight">{user?.username}</h2>
+                    <p className="text-slate-500 text-[10px] font-black uppercase mt-2 opacity-60 italic tracking-widest">{user?.email}</p>
+                 </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-slate-900/40 p-5 rounded-3xl border border-white/5 text-center">
+                       <p className="text-[8px] text-slate-500 uppercase mb-1">Status</p>
+                       <p className="text-xs text-white font-black uppercase tracking-widest">{user?.role === 'admin' ? 'Elite Admin' : 'Pro Player'}</p>
+                    </div>
+                    <div className="bg-slate-900/40 p-5 rounded-3xl border border-white/5 text-center">
+                       <p className="text-[8px] text-slate-500 uppercase mb-1">Joined</p>
+                       <p className="text-xs text-white font-black uppercase tracking-widest">2024</p>
+                    </div>
+                 </div>
+                 <button onClick={() => CloudflareService.logout().then(() => setScreen('AUTH'))} className="w-full bg-rose-500/10 p-6 rounded-3xl flex justify-between items-center text-rose-500 text-[11px] font-black uppercase tracking-widest border border-rose-500/20 hover:bg-rose-500 hover:text-white transition-all active:scale-95 group">
+                    <span>TERMINATE SESSION</span><i className="fa-solid fa-power-off group-hover:rotate-12 transition-transform"></i>
+                 </button>
+              </div>
+            )}
           </div>
 
-          <nav className="fixed bottom-8 left-6 right-6 max-w-[calc(28rem-3rem)] mx-auto bg-slate-950/90 backdrop-blur-3xl border border-white/10 p-5 rounded-[40px] flex justify-around items-center z-50">
+          <nav className="fixed bottom-8 left-6 right-6 max-w-[calc(28rem-3rem)] mx-auto bg-slate-950/90 backdrop-blur-3xl border border-white/10 p-5 rounded-[40px] flex justify-around items-center z-50 shadow-2xl shadow-black">
             {[
               { s: 'HOME', i: 'fa-gamepad' },
               { s: 'LEADERBOARD', i: 'fa-ranking-star' },
               { s: 'WALLET', i: 'fa-indian-rupee-sign' },
+              { s: 'RESULT_UPLOAD', i: 'fa-brain' },
               { s: 'PROFILE', i: 'fa-user' }
             ].map(item => (
-              <button key={item.s} onClick={() => setScreen(item.s as any)} className={`p-4 rounded-2xl transition-all ${screen === item.s ? 'bg-orange-500 text-white scale-110 shadow-lg' : 'text-slate-600'}`}>
+              <button key={item.s} onClick={() => setScreen(item.s as Screen)} className={`p-4 rounded-2xl transition-all duration-300 ${screen === item.s ? 'bg-orange-500 text-white scale-110 shadow-[0_0_20px_rgba(249,115,22,0.4)]' : 'text-slate-600 hover:text-slate-400'}`}>
                 <i className={`fa-solid ${item.i} text-xl`}></i>
               </button>
             ))}
