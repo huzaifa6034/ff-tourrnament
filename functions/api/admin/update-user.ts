@@ -6,7 +6,7 @@ interface Env {
 export const onRequestPost: any = async (context: any) => {
   const { DB } = context.env;
   const data = await context.request.json() as any;
-  const { uid, role, totalEarnings, matchesPlayed } = data;
+  const { uid, role, totalEarnings, matchesPlayed, balance } = data;
 
   if (!uid) {
     return new Response(JSON.stringify({ message: "Missing UID" }), { status: 400 });
@@ -20,6 +20,10 @@ export const onRequestPost: any = async (context: any) => {
     if (role !== undefined) { 
       fields.push("role = ?"); 
       params.push(role); 
+    }
+    if (balance !== undefined) { 
+      fields.push("balance = ?"); 
+      params.push(Number(balance)); 
     }
     if (totalEarnings !== undefined) { 
       fields.push("totalEarnings = ?"); 

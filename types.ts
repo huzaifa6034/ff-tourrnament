@@ -12,6 +12,8 @@ export interface Tournament {
   slotsFull: number;
   totalSlots: number;
   map: string;
+  roomId?: string;
+  roomPassword?: string;
 }
 
 export interface User {
@@ -23,6 +25,7 @@ export interface User {
   matchesPlayed: number;
   totalEarnings: number;
   role?: 'admin' | 'player';
+  isBanned?: boolean;
 }
 
 export interface FeatureCardProps {
