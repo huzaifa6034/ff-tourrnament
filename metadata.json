@@ -1,0 +1,7 @@
+{
+  "name": "FF Tournament Strategy & Blueprint",
+  "description": "A comprehensive guide and interactive dashboard explaining how to build and manage a Free Fire tournament application, featuring AI-driven result verification concepts.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
