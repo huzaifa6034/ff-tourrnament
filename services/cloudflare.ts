@@ -79,6 +79,12 @@ export const CloudflareService = {
     return await response.json();
   },
 
+  async getTournamentParticipants(tournamentId: string): Promise<any[]> {
+    const response = await fetch(`${API_BASE_URL}/admin/tournament-participants?tournamentId=${tournamentId}`);
+    if (!response.ok) return [];
+    return await response.json();
+  },
+
   async adminAddTournament(tournament: Partial<Tournament>): Promise<boolean> {
     const response = await fetch(`${API_BASE_URL}/admin/tournaments`, {
       method: 'POST',
