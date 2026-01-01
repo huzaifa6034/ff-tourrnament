@@ -1,5 +1,5 @@
 
-export type Screen = 'HOME' | 'WALLET' | 'PROFILE' | 'TOURNAMENT_DETAIL' | 'AUTH' | 'SIGNUP' | 'RESULT_UPLOAD';
+export type Screen = 'HOME' | 'WALLET' | 'PROFILE' | 'TOURNAMENT_DETAIL' | 'AUTH' | 'SIGNUP' | 'RESULT_UPLOAD' | 'ADMIN' | 'ADMIN_MATCHES';
 
 export interface Tournament {
   id: string;
@@ -22,6 +22,7 @@ export interface User {
   balance: number;
   matchesPlayed: number;
   totalEarnings: number;
+  role?: 'admin' | 'player';
 }
 
 export interface FeatureCardProps {

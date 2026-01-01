@@ -1,17 +1,9 @@
 
-import { User } from '../types';
+import { User, Tournament } from '../types';
 
-/**
- * Cloudflare D1 Service
- * NOTE: Cloudflare D1 ko directly browser se access nahi kiya jata.
- * Aapko ek Cloudflare Worker banana hoga jo backend ka kaam karega.
- * Ye service us Worker ke API endpoints ko call karegi.
- */
-
-const API_BASE_URL = '/api'; // Aapke Cloudflare Worker ka route
+const API_BASE_URL = '/api';
 
 export const CloudflareService = {
-  // Check if session exists in LocalStorage (Cloudflare doesn't have built-in Auth SDK)
   getCurrentUser: (): User | null => {
     const saved = localStorage.getItem('bh_session');
     return saved ? JSON.parse(saved) : null;
@@ -23,12 +15,7 @@ export const CloudflareService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData),
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Signup failed');
-    }
-
+    if (!response.ok) throw new Error('Signup failed');
     const data = await response.json();
     localStorage.setItem('bh_session', JSON.stringify(data.user));
     return data.user;
@@ -40,12 +27,7 @@ export const CloudflareService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password: pass }),
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Invalid credentials');
-    }
-
+    if (!response.ok) throw new Error('Invalid credentials');
     const data = await response.json();
     localStorage.setItem('bh_session', JSON.stringify(data.user));
     return data.user;
@@ -68,5 +50,37 @@ export const CloudflareService = {
       body: JSON.stringify({ uid, amount }),
     });
     return response.ok;
+  },
+
+  // --- Dynamic Tournament Service ---
+  async getTournaments(): Promise<Tournament[]> {
+    const response = await fetch(`${API_BASE_URL}/admin/tournaments`);
+    if (!response.ok) return [];
+    return await response.json();
+  },
+
+  // --- Admin Specific Services ---
+  async adminAddTournament(tournament: Partial<Tournament>): Promise<boolean> {
+    const response = await fetch(`${API_BASE_URL}/admin/tournaments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(tournament),
+    });
+    return response.ok;
+  },
+
+  async adminDeleteTournament(id: string): Promise<boolean> {
+    const response = await fetch(`${API_BASE_URL}/admin/delete-tournament`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    return response.ok;
+  },
+
+  async adminGetAllUsers(): Promise<User[]> {
+    const response = await fetch(`${API_BASE_URL}/admin/users`);
+    if (!response.ok) return [];
+    return await response.json();
   }
 };
