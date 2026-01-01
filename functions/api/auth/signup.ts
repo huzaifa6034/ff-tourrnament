@@ -19,7 +19,7 @@ export const onRequestPost: any = async (context: any) => {
       return new Response(JSON.stringify({ message: "Email already exists" }), { status: 400 });
     }
 
-    // Explicitly initializing all user stats for the Leaderboard
+    // Explicitly initializing all user stats as numbers (0 or 0.0)
     await DB.prepare(
       "INSERT INTO users (uid, username, email, password, balance, role, totalEarnings, matchesPlayed) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
     )

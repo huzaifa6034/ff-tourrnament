@@ -52,20 +52,27 @@ export const CloudflareService = {
     return response.ok;
   },
 
+  async joinTournament(uid: string, tournamentId: string, entryFee: number): Promise<boolean> {
+    const response = await fetch(`${API_BASE_URL}/tournaments/join`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid, tournamentId, entryFee }),
+    });
+    return response.ok;
+  },
+
   async getLeaderboard(): Promise<any[]> {
     const response = await fetch(`${API_BASE_URL}/user/leaderboard`);
     if (!response.ok) return [];
     return await response.json();
   },
 
-  // --- Dynamic Tournament Service ---
   async getTournaments(): Promise<Tournament[]> {
     const response = await fetch(`${API_BASE_URL}/admin/tournaments`);
     if (!response.ok) return [];
     return await response.json();
   },
 
-  // --- Admin Specific Services ---
   async adminAddTournament(tournament: Partial<Tournament>): Promise<boolean> {
     const response = await fetch(`${API_BASE_URL}/admin/tournaments`, {
       method: 'POST',
@@ -88,5 +95,14 @@ export const CloudflareService = {
     const response = await fetch(`${API_BASE_URL}/admin/users`);
     if (!response.ok) return [];
     return await response.json();
+  },
+
+  async adminUpdateUser(uid: string, data: Partial<User>): Promise<boolean> {
+    const response = await fetch(`${API_BASE_URL}/admin/update-user`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid, ...data }),
+    });
+    return response.ok;
   }
 };
