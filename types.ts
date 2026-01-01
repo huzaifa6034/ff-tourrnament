@@ -1,5 +1,5 @@
 
-export type Screen = 'HOME' | 'WALLET' | 'PROFILE' | 'TOURNAMENT_DETAIL' | 'AUTH' | 'SIGNUP' | 'RESULT_UPLOAD' | 'ADMIN' | 'ADMIN_MATCHES' | 'ADMIN_AUTH' | 'LEADERBOARD';
+export type Screen = 'HOME' | 'WALLET' | 'PROFILE' | 'TOURNAMENT_DETAIL' | 'AUTH' | 'SIGNUP' | 'RESULT_UPLOAD' | 'ADMIN' | 'ADMIN_MATCHES' | 'ADMIN_AUTH' | 'LEADERBOARD' | 'DEPOSIT' | 'WITHDRAW';
 
 export interface Tournament {
   id: string;
@@ -26,6 +26,17 @@ export interface User {
   totalEarnings: number;
   role?: 'admin' | 'player';
   isBanned?: boolean;
+}
+
+export interface Transaction {
+  id: string;
+  user_uid: string;
+  username?: string;
+  type: 'DEPOSIT' | 'WITHDRAW';
+  amount: number;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  details: string; // Screenshot base64 for deposit, Account info for withdraw
+  createdAt: string;
 }
 
 export interface FeatureCardProps {

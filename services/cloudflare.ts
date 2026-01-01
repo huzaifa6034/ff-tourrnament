@@ -1,5 +1,5 @@
 
-import { User, Tournament } from '../types';
+import { User, Tournament, Transaction } from '../types';
 
 const API_BASE_URL = '/api';
 
@@ -49,11 +49,11 @@ export const CloudflareService = {
     return await response.json();
   },
 
-  async updateBalance(uid: string, amount: number): Promise<boolean> {
-    const response = await fetch(`${API_BASE_URL}/user/update-balance`, {
+  async createTransaction(data: Partial<Transaction>): Promise<boolean> {
+    const response = await fetch(`${API_BASE_URL}/transactions/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ uid, amount }),
+      body: JSON.stringify(data),
     });
     return response.ok;
   },
@@ -107,6 +107,21 @@ export const CloudflareService = {
     const response = await fetch(`${API_BASE_URL}/admin/users`);
     if (!response.ok) return [];
     return await response.json();
+  },
+
+  async adminGetTransactions(): Promise<Transaction[]> {
+    const response = await fetch(`${API_BASE_URL}/admin/transactions`);
+    if (!response.ok) return [];
+    return await response.json();
+  },
+
+  async adminUpdateTransaction(transactionId: string, status: string, user_uid: string, amount: number): Promise<boolean> {
+    const response = await fetch(`${API_BASE_URL}/admin/transactions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transactionId, status, user_uid, amount }),
+    });
+    return response.ok;
   },
 
   async adminUpdateUser(uid: string, data: Partial<User>): Promise<boolean> {
