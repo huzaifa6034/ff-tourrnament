@@ -1,10 +1,8 @@
 
 interface Env {
-  // Using any to bypass missing D1Database type definition in current environment
   DB: any;
 }
 
-// Using any for PagesFunction to avoid type errors when Cloudflare types are not globally available
 export const onRequestPost: any = async (context: any) => {
   const { DB } = context.env;
   const { username, email, password } = await context.request.json() as any;
@@ -16,20 +14,19 @@ export const onRequestPost: any = async (context: any) => {
   const uid = crypto.randomUUID();
 
   try {
-    // Check if email exists
     const existing = await DB.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
     if (existing) {
       return new Response(JSON.stringify({ message: "Email already exists" }), { status: 400 });
     }
 
-    // Insert user (In real app, hash the password!)
+    // Role is explicitly set to 'player' during signup
     await DB.prepare(
-      "INSERT INTO users (uid, username, email, password, balance) VALUES (?, ?, ?, ?, ?)"
+      "INSERT INTO users (uid, username, email, password, balance, role) VALUES (?, ?, ?, ?, ?, ?)"
     )
-    .bind(uid, username, email, password, 100.0)
+    .bind(uid, username, email, password, 100.0, 'player')
     .run();
 
-    const user = { uid, username, email, balance: 100.0 };
+    const user = { uid, username, email, balance: 100.0, role: 'player' };
     return new Response(JSON.stringify({ user }), { status: 200 });
 
   } catch (e: any) {
